@@ -16,7 +16,7 @@ app = Flask(__name__)
 
 # Your registered application's details
 client_id = '267f4fe7-d947-447a-9a73-a87aed2b7d46'
-client_secret = 's5x8Q~pL3DmmKy8mApruGthjedulmhvlo.YoAaqt'
+
 tenant_id = '60dc5bcb-2587-4331-b98d-aa4bdb292cad'
 MAIL_USERNAME = 'hsabookings@medirect.com.au'
 
