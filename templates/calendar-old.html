@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8' />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Institutional Abuse Appointment Calendar</title>
+        <!-- Order is important: First load Bootstrap CSS, then FullCalendar CSS, then Bootstrap Select CSS -->
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+        <link href='https://cdn.jsdelivr.net/npm/fullcalendar@latest/main.min.css' rel='stylesheet' />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+        
+    </head>
+  <body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+      <div class="navbar-brand">
+        <img src="static/logo/logo.png" alt="MEDirect Logo">
+      </div>
+      <div class="nav-links">
+        <a href="/" class="nav-item home">Home</a>
+        <a href="mailto:hsabookings@medirect.com.au" class="email nav-item">Get in Touch</a>
+      </div>
+      <div class="contact-info">
+        <a href="mailto:hsabookings@medirect.com.au" class="email">
+            <i class="fas fa-envelope"></i> hsabookings@medirect.com.au
+        </a>
+        <a href="tel:1300001633" class="hotline">
+            <i class="fas fa-phone"></i> 1300 001 633
+        </a>
+      </div>
+    </nav>
+
+    <!-- Header Start -->
+    <div class="main-header">
+      <div class="header-blackout">
+        <h1 >Unparalleled Expertise</h1>
+        <h1>In Child Sexual Abuse Reports</h1>
+        <h3>Your exclusive access to Psychiatrists in the industry's only RANZCP-approved Child Abuse Peer Review Group</h3>
+        <div class="header-icons">
+          <div class="icon-item">
+            <img src="static/icons/abuse-law-icon.png" alt="Lawyer-Trained in Abuse Law">
+            <p>Lawyer-Trained in</p>
+            <p>Abuse Law</p>
+          </div>
+          <div class="icon-item">
+            <img src="static/icons/clinical-evidence-icon.png" alt="Evidence-Based Opinions">
+            <p>Evidence-Based</p>
+            <p>Opinions</p>
+          </div>
+          <div class="icon-item">
+            <img src="static/icons/lawyers-icon.png" alt="Lawyer-Trained Expert Witness">
+            <p>Lawyer-Trained</p>
+            <p> Expert Witness</p>
+          </div>
+          <div class="icon-item">
+            <img src="static/icons/trauma-care-icon.png" alt="Trauma-Informed Assessments">
+            <p>Trauma-Informed</p>
+            <p>Assessments</p>
+          </div>
+        </div>
+        <div class="header-buttons">
+          <button onclick="location.href='#calendar-container'">Make Appointment</button>
+          <button onclick="location.href='mailto:hsabookings@medirect.com.au'" class="email">Contact Us</button>
+        </div>
+      </div>
+      <div class="header-image" style="background-image: url('static/images/hero_image.png');">
+        <!-- This will show the image; make sure the path is correct -->
+      </div>
+    </div>
+    <!-- Header End -->
+    
+    <div class="container-fluid">
+      <!-- Header Section -->
+      <div class="row no-gutters">
+        <!-- no-gutters class removes spacing between columns -->
+        <div class="col">
+          <div class="header">
+            <h1 class="header-title">Institutional Abuse Appointment Calendar</h1>
+          </div>
+        </div>
+      </div>
+      <div class="row no-gutters">
+        <!-- Sidebar for filters -->
+        <div class="sidebar">
+          <div class="logo-container">
+            <img src="static/logo/MEDirect-04.png" alt="MEDirect Logo" class="header-logo">
+          </div>
+          <!-- Search Box for Doctors -->
+          <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="Search for Doctors" aria-label="Search for Doctors" id="searchDoctorInput">
+            <div class="input-group-append">
+              <button class="btn btn-outline-light" type="button" id="searchDoctorBtn">Search</button>
+            </div>
+          </div>
+          <!-- Medical Expert Multi-select Filter -->
+          <label for="medicalExpertSelect">Choose Multiple Medical Expert</label>
+          <select id="medicalExpertSelect" class="selectpicker" multiple data-actions-box="true" data-live-search="true" data-width="100%">
+            <!-- Options will be dynamically populated -->
+          </select>
+          <!-- Year Filter -->
+          <label for="yearSelect">Year</label>
+          <select class="custom-select mb-3" id="yearSelect">
+            <option value="all">Select Year</option>
+            <!--<option value="2023">2023</option><option value="2024">2024</option>-->
+          </select>
+          <!-- Month Filter -->
+          <label>Month</label>
+          <div id="monthFilter" class="btn-group-toggle" data-toggle="buttons">
+            <label class="btn btn-secondary active">
+              <input type="checkbox" id="selectAllMonths" checked autocomplete="off"> Select All </label>
+            <!-- Individual month checkboxes here -->
+          </div>
+        </div>
+        <!-- Main calendar container -->
+        <div class="col-md-9 main-content">
+          <div id='calendar-container'>
+            <div id='calendar'></div>
+          </div>
+        </div>
+      </div>
+      <!-- Modal -->
+      <div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <!-- Changed to modal-lg for a larger modal -->
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="bookingModalLabel">Book Slot</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <form id="bookingForm" class="form-row">
+                <!-- Added form-row for grid system -->
+                <div class="form-group col-md-6">
+                  <label for="appointmentRequestId">Appointment Request ID:</label>
+                  <input type="text" class="form-control" id="appointmentRequestId" readonly>
+                </div>
+                <div class="form-group col-md-6">
+                  <!-- Empty column for alignment -->
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="patientName">Your Name:</label>
+                  <input type="text" class="form-control" id="patientName" required>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="companyLocation">Your Company and Office Locations:</label>
+                  <input type="text" class="form-control" id="companyLocation" required>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="patientEmail">Your Email:</label>
+                  <input type="email" class="form-control" id="patientEmail" required>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="officeSuburb">Office Suburb:</label>
+                  <input type="text" class="form-control" id="officeSuburb" required>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="patientPhone">Your Phone Number:</label>
+                  <input type="tel" class="form-control" id="patientPhone" required>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="examineeName">Client's Name (optional):</label>
+                  <input type="text" class="form-control" id="examineeName">
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="selectedDoctor">Doctor:</label>
+                  <input type="text" class="form-control" id="selectedDoctor" readonly>
+                </div>
+                <div class="form-group col-md-6">
+                  <label for="examineeRefNumber">Client's Reference Number (optional):</label>
+                  <input type="text" class="form-control" id="examineeRefNumber">
+                </div>
+                <div class="form-group col-md-12">
+                  <label for="selectedTime">Date and Time:</label>
+                  <div class="input-group date" id="datetimepicker1" data-target-input="nearest">
+                    <input type="text" class="form-control datetimepicker-input" data-target="#datetimepicker1" id="selectedTime">
+                    <div class="input-group-append" data-target="#datetimepicker1" data-toggle="datetimepicker">
+                        <div class="input-group-text" style="pointer-events: none;"><i class="fa fa-calendar"></i></div>
+                    </div>
+                </div>                
+                </div>
+                <div class="form-group col-12">
+                  <label for="clientIncarcerated">Is the client currently incarcerated?</label>
+                  <select class="form-control" id="clientIncarcerated" required>
+                      <option value="">Choose...</option>
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                  </select>
+              </div>
+              <div class="form-group col-12">
+                  <label for="clientResiding">Where is the client currently residing?</label>
+                  <input type="text" class="form-control" id="clientResiding" required>
+              </div>
+              
+              <div class="form-group col-12">
+                  <label for="additionalComments">Any additional comments to assist with the booking:</label>
+                  <textarea class="form-control" id="additionalComments"></textarea>
+              </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary" form="bookingForm">Submit Appointment Request</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmNoSlotsModal" tabindex="-1" aria-labelledby="confirmNoSlotsModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="confirmNoSlotsModalLabel">No Active Slots</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            There are no active slots for this doctor for this month. Would you like to request an appointment?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" id="confirmBookingBtn">Book Appointment</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Footer -->
+    <footer class="site-footer bg-blackout text-white text-center py-3">
+      MEDirect Pty Ltd. All Rights Reserved.
+    </footer>
+    <!-- Order is important: First load jQuery, then Bootstrap Bundle (which includes Bootstrap's JavaScript), then FullCalendar's JavaScript, and finally Bootstrap Select JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@latest/main.min.js'></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
+    <script type="text/javascript">
+      $(function () {
+        $('#datetimepicker1').datetimepicker({
+          // Your desired options
+          format: 'YYYY-MM-DD',
+          stepping: 30 // step the minutes selection in 30 minutes increments
+        });
+      });
+    </script>
+    <script>
+      // Variable declarations
+      var noActiveSlots = false; // Variable to keep track of slot availability
+      var slotsFetched = false; // Flag to control the fetching of slots
+      var allDoctors = []; // Store all doctors
+    
+      document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+        var today = new Date();
+        var currentYear = today.getFullYear();
+        var currentMonth = today.getMonth(); // Define currentMonth here
+    
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+          headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+          },
+          initialView: 'dayGridMonth',
+          navLinks: true,
+          dayMaxEvents: true,
+          validRange: {
+            start: today.toISOString().split('T')[0]
+          },
+          events: function(fetchInfo, successCallback, failureCallback) {
+            fetchSlots(fetchInfo.start, fetchInfo.end, successCallback);
+          },
+          eventClick: function(info) {
+            showBookingModal(false, info); 
+          },
+          eventContent: function(arg) {
+            var classNames = arg.event.extendedProps.isBooked ? 'event-booked' : 'event-not-booked';
+            var statusText = arg.event.extendedProps.isBooked ? 'Booked' : 'Not Booked';
+            var timeText = arg.event.start.toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true
+            });
+            return {
+              html: `<div class="${classNames}">${timeText} - ${statusText}</div>`
+            };
+          },
+          eventMouseEnter: function(mouseEnterInfo) {
+            // Create the tooltip content
+            var tooltipContent = `Event Name: ${mouseEnterInfo.event.title}\n` + `Doctor: ${mouseEnterInfo.event.extendedProps.doctorName}\n` + `Start Time: ${mouseEnterInfo.event.start.toLocaleTimeString()}\n` + `Branch Name: ${mouseEnterInfo.event.extendedProps.branchName}`; // Ensure branchName is set in the event's extendedProps
+            // Set the title attribute on the event element for the tooltip
+            mouseEnterInfo.el.setAttribute('title', tooltipContent);
+          }
+        });
+
+        $(document).ready(function() {
+          $('[data-toggle="tooltip"]').tooltip();
+        });
+    
+        calendar.render();
+        setupMonthFilter();
+        fetchDoctorsAndUpdateSelect();
+        initializeSelectPicker();
+
+        $('#medicalExpertSelect').change(function() {
+          var selectedMonth = calendar.getDate(); // Get the currently viewed month
+          fetchSlotsForCurrentView();
+          checkMonthSlots(selectedMonth);
+          updateActiveMonth(selectedMonth.getMonth());
+        });
+    
+        // Set up buttons for each month and handle month selection
+        function setupMonthFilter() {
+          var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+          var monthFilter = document.getElementById('monthFilter');
+          monthFilter.innerHTML = '';
+  
+          monthNames.forEach(function(month, index) {
+              if (index >= currentMonth) { // Only add months from the current month onward
+                  var button = document.createElement('button');
+                  button.className = 'btn btn-secondary';
+                  button.textContent = month;
+                  button.onclick = function() {
+                      calendar.gotoDate(new Date(currentYear, index, 1));
+                      checkMonthSlots(new Date(currentYear, index, 1));
+                      updateActiveMonth(index);
+                  };
+                  monthFilter.appendChild(button);
+              }
+          });
+          updateActiveMonth(currentMonth); // Set the current month as active on initial load
+        }
+
+        // Fetch slots based on the visible month and selected doctors
+        function fetchSlotsForCurrentView() {
+          let start = calendar.getDate();
+          let end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+          let selectedDoctors = $('#medicalExpertSelect').val() || [];
+          let queryParams = new URLSearchParams({ start: start.toISOString(), end: end.toISOString() });
+          selectedDoctors.forEach(doctorId => queryParams.append('doctor_id', doctorId));
+  
+          fetch(`/api/slots?${queryParams.toString()}`)
+              .then(response => response.json())
+              .then(events => {
+                  calendar.removeAllEvents();
+                  events.forEach(event => {
+                      calendar.addEvent({
+                          title: event.status,
+                          start: event.start,
+                          end: event.end,
+                          color: event.status === 'Booked' ? 'blue' : 'green',
+                          extendedProps: {
+                              isBooked: event.status === 'Booked',
+                              doctorName: event.doctor_name,
+                              branchName: event.branch_name
+                          }
+                      });
+                  });
+              })
+              .catch(err => {
+                  console.error('Error fetching slots:', err);
+                  alert('An error occurred while fetching the slots. Please try again.');
+              });
+        }
+        
+        function updateActiveMonth(activeMonthIndex) {
+          var buttons = document.querySelectorAll('#monthFilter button');
+          buttons.forEach(function(button, index) {
+              button.classList.remove('active'); // Remove 'active' from all buttons
+              if (index === (activeMonthIndex - currentMonth)) {
+                  button.classList.add('active'); // Add 'active' to the selected button
+              }
+          });
+        }
+
+        if ($('#monthFilter').length > 0) {
+          var isChecked = $('#monthFilter').prop('checked');
+        }
+
+        function checkMonthSlots(date) {
+          var start = date;
+          var end = new Date(date.getFullYear(), date.getMonth() + 1, 0); // End of the selected month
+          var selectedDoctors = $('#medicalExpertSelect').val() || [];
+          var queryParams = new URLSearchParams({ start: start.toISOString(), end: end.toISOString() });
+          selectedDoctors.forEach(doctorId => queryParams.append('doctor_id', doctorId));
+      
+          fetch(`/api/slots?${queryParams.toString()}`)
+              .then(response => response.json())
+              .then(events => {
+                  if (events < 1) {
+                      $('#confirmNoSlotsModal').modal('show'); // Show modal only if no active slots found
+                  }
+              })
+              .catch(err => {
+                  console.error('Error fetching slots:', err);
+                  alert('An error occurred while fetching the slots. Please refresh the page.');
+              });
+          }
+      
+      
+        function updateMonthHighlight(selectedMonth) {
+          var buttons = document.querySelectorAll('#monthFilter button');
+          buttons.forEach(button => button.classList.remove('active'));
+          document.querySelector(`#monthFilter button[value="${selectedMonth}"]`).classList.add('active');
+        }
+    
+        // Previous and next button functionality
+        $('.fc-prev-button, .fc-next-button').on('click', function() {
+          var currentDate = calendar.getDate();
+          checkMonthSlots(currentDate);
+          updateMonthHighlight(currentDate.getMonth());
+        });
+
+        // Fetch slots based on the selected month and update the calendar
+        function fetchSlots(start, end, successCallback) {
+          var queryParams = new URLSearchParams({
+              start: start.toISOString(),
+              end: end.toISOString()
+          });
+      
+          $('#medicalExpertSelect').val().forEach(doctorId => queryParams.append('doctor_id', doctorId));
+      
+          fetch(`/api/slots?${queryParams.toString()}`)
+              .then(response => {
+                  if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                  return response.json();
+              })
+              .then(events => {
+                  console.log("Events received:", events); // This will show all event data received from the server
+                  calendar.removeAllEvents(); // Clear existing events to avoid duplicates
+      
+                  events.forEach(event => {
+                      if (!calendar.getEventById(event.id)) { // Check if the event already exists
+                          if (!events || events.length === 0) {
+                            console.error('No events or invalid data received:', events);
+                            return; // Exit if no events
+                          }
+                          const doctorName = event.doctor_name || 'Not specified';
+                          const branchName = event.branch_name || 'Not specified';
+                          calendar.addEvent({
+                              id: event.id,
+                              title: event.status,
+                              start: event.start,
+                              end: event.end,
+                              color: event.status === 'Booked' ? 'blue' : 'green',
+                              extendedProps: {
+                                  isBooked: event.status === 'Booked',
+                                  doctorName: doctorName,
+                                  branchName: branchName
+                              }
+                          });
+                      }
+                  });
+                  if (successCallback) successCallback(events);
+              })
+              .catch(err => {
+                  console.error('Error fetching slots:', err);
+                  alert('An error occurred while fetching the slots. Please try again.');
+              });
+        }
+        
+        // Fetching and updating the list of doctors
+        function fetchDoctorsAndUpdateSelect() {
+          fetch('/api/doctors')
+              .then(response => response.json())
+              .then(doctors => {
+                  var select = document.getElementById('medicalExpertSelect');
+                  select.innerHTML = '';
+                  doctors.forEach(function(doctor) {
+                      var option = new Option(doctor.name, doctor.id);
+                      select.add(option);
+                  });
+                  $('.selectpicker').selectpicker('refresh');
+              })
+              .catch(err => {
+                  console.error('Error fetching doctors:', err);
+                  alert('Failed to fetch doctor data.');
+              });
+          }
+    
+        function initializeSelectPicker() {
+          $('.selectpicker').selectpicker();
+        }
+
+        $('#confirmBookingBtn').on('click', function() {
+          $('#confirmNoSlotsModal').modal('hide');
+          showBookingModal(true); // This is where we indicate there are no slots, thus enabling date/time input
+        });
+    
+        // Handling booking modal and form submission
+        function showBookingModal(isBookingWithoutSlot = false, info = null) {
+          var doctorName = isBookingWithoutSlot ? $('#medicalExpertSelect option:selected').text() : info.event.extendedProps.doctorName || 'Doctor not specified';
+          var startTime = isBookingWithoutSlot ? '' : info.event.start.toLocaleString('en-US', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true
+          });
+          var endTime = isBookingWithoutSlot || !info.event.end ? '' : info.event.end.toLocaleString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true
+          });
+
+          // Fetch the latest reference ID from the server
+          fetch('/api/get-latest-reference-id').then(response => {
+              if (!response.ok) {
+                  throw new Error('Server responded with an error.');
+              }
+              return response.json();
+          }).then(data => {
+              document.getElementById('appointmentRequestId').value = data.latest_reference_id;
+              document.getElementById('selectedDoctor').value = doctorName;
+              if (info && !info.event.extendedProps.isBooked) {
+                  // Slot is available and not booked, disable the input field
+                  $('#selectedTime').prop('readonly', true).val(`${startTime} - ${endTime}`);
+              } else {
+                  // Slot is booked or it's a booking without a slot (manual entry required)
+                  $('#selectedTime').prop('readonly', false).val('');
+              }
+              $('#bookingModal').modal('show');
+          }).catch(error => {
+              console.error('Error fetching the latest reference ID:', error);
+              alert('Error fetching the latest reference ID. Please try again or contact support.');
+          });
+        }
+      
+
+        document.getElementById('bookingForm').addEventListener('submit', function(e) {
+          e.preventDefault();
+          console.log("Attempting to submit with noActiveSlots: " + noActiveSlots);
+        
+          let bookingData = {
+            patient_name: document.getElementById('patientName').value,
+            email: document.getElementById('patientEmail').value,
+            phone: document.getElementById('patientPhone').value,
+            doctor_name: document.getElementById('selectedDoctor').value,
+            suburb: document.getElementById('officeSuburb').value, 
+            company_location: document.getElementById('companyLocation').value,
+            appointment_time: document.getElementById('selectedTime').value,
+            examinee_name: document.getElementById('examineeName').value,
+            examinee_ref_number: document.getElementById('examineeRefNumber').value,
+            reference_id: document.getElementById('appointmentRequestId').value,
+            client_incarcerated: document.getElementById('clientIncarcerated').value,
+            client_residing: document.getElementById('clientResiding').value,
+            additional_comments: document.getElementById('additionalComments').value,
+            no_active_slots: noActiveSlots
+          };
+        
+          fetch('/api/send-booking-email', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(bookingData)
+          }).then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          }).then(data => {
+            console.log('Received data from server:', data);
+            console.log('Sending booking data:', bookingData);
+            if ('reference_id' in data) {
+              const appointmentRequestIdInput = document.getElementById('appointmentRequestId');
+              if (appointmentRequestIdInput) {
+                appointmentRequestIdInput.value = data.reference_id;
+                alert("Your appointment request has been successfully sent. Reference ID: " + data.reference_id);
+              } else {
+                console.error('Cannot find #appointmentRequestId input element.');
+                alert("Your appointment request has been sent, but there was an error updating the reference ID on the form.");
+              }
+            } else {
+              console.error("latest_reference_id not found in response:", data);
+              alert("Your appointment request has been sent, but the reference ID was not returned.");
+            }
+            $('#bookingModal').modal('hide');
+            document.getElementById('bookingForm').reset();
+          }).catch((error) => {
+            console.error('Error:', error);
+            alert("There was a problem sending your appointment request. Please try again.");
+          });
+        });
+    });
+    </script>      
+    
+    <!-- Bootstrap Select and its dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
+    <!-- Moment.js is a dependency for Tempus Dominus -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <!-- Tempus Dominus Bootstrap 4 scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/js/tempusdominus-bootstrap-4.min.js"></script>
+    
+  </body>
+</html>

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8' />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Veritas Appointment Calendar</title>
+        <!-- Order is important: First load Bootstrap CSS, then FullCalendar CSS, then Bootstrap Select CSS -->
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+        <link href='https://cdn.jsdelivr.net/npm/fullcalendar@latest/main.min.css' rel='stylesheet' />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+        <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css">
+
+
+        <style>
+          .modal-body {
+            max-height: calc(100vh - 200px); /* Adjust this value based on your header/footer size */
+            overflow-y: auto; /* Enable vertical scrolling */
+          }
+          /* CSS for the calendar */
+       /*   .fc .fc-daygrid-day-number {
+    color: #ff5733; /* Change this to your desired color */
+    .fc .fc-col-header-cell {
+    background-color: #01011d; /* Dark Blue background */
+}
+
+.fc .fc-col-header-cell-cushion {
+    color: #FFFFFF; /* White font color */
+}
+
+
+        </style>
+        
+    </head>
+  <body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+      <div class="navbar-brand">
+        <img src="static/logo/VML.png" alt="Veritas Logo">
+      </div>
+      <!--<div class="nav-links">
+        <a href="/" class="nav-item home">Home</a>
+        <a href="mailto:reception@veritasmedicolegal.com.au" class="email nav-item">Get in Touch</a>
+      </div>-->
+      <div class="contact-info">
+        <a href="mailto:reception@veritasmedicolegal.com.au" class="email">
+            <i class="fas fa-envelope"></i> reception@veritasmedicolegal.com.au
+        </a>
+        <a href="tel:1300001633" class="hotline">
+            <i class="fas fa-phone"></i> 08 6285 9876
+        </a>
+      </div>
+    </nav>
+
+    <!-- Header Start -->
+    <div class="main-header">
+      <div class="header-image" style="background-image: url('static/images/veitas.png');">
+        <!-- This will show the image; make sure the path is correct -->
+      </div>
+      <!--<div class="header-buttons">
+        <button onclick="location.href='#calendar-container'">Make Appointment</button>
+        <button onclick="location.href='mailto:hsabookings@medirect.com.au'" class="email">Contact Us</button>
+      </div>-->
+    </div>
+    <!-- Header End -->
+
+    <div class="container-fluid">
+      <!-- Header Section -->
+      <div class="row no-gutters">
+        <!-- no-gutters class removes spacing between columns -->
+        <div class="col">
+          <div class="header">
+            <h1 class="header-title"> Current Availability: Please select a session to make a booking or call direct on (08) 6285 9876</h1>
+          </div>
+        </div>
+      </div>
+      <div class="row no-gutters">
+        <!-- Sidebar for filters -->
+        <div class="sidebar">
+          <div class="logo-container">
+            <img src="static/logo/VMLogo.png" alt="Veritas Logo" class="header-logo">
+          </div>
+          <!-- Medical Expert Multi-select Filter -->
+          <label for="medicalExpertSelect">Select one or multiple Practitioners</label>
+          <select id="medicalExpertSelect" class="selectpicker" multiple data-actions-box="true" data-live-search="true" data-width="100%">
+            <!-- Options will be dynamically populated -->
+          </select>
+          <!-- Search Box for Doctors -->
+          <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="Search for Doctors" aria-label="Search for Doctors" id="searchDoctorInput">
+            <div class="input-group-append">
+              <button class="btn btn-outline-light" type="button" id="searchDoctorBtn">Search</button>
+            </div>
+          </div>
+          <!-- Month Filter -->
+          <label>Month</label>
+          <div id="monthFilter" class="btn-group-toggle" data-toggle="buttons">
+            <label class="btn btn-secondary active">
+              <input type="checkbox" id="selectAllMonths" checked autocomplete="off"> Select All </label>
+            <!-- Individual month checkboxes here -->
+          </div>
+        </div>
+        <!-- Main calendar container -->
+        <div class="col-md-9 main-content">
+          <div id='calendar-container'>
+            <div id='calendar'></div>
+          </div>
+        </div>
+      </div>
+      
+    <!-- Footer -->
+    <footer class="site-footer bg-blackout text-white text-center py-3">
+      &copy Veritas MedicoLegal All Rights Reserved.
+    </footer>
+    <!-- Order is important: First load jQuery, then Bootstrap Bundle (which includes Bootstrap's JavaScript), then FullCalendar's JavaScript, and finally Bootstrap Select JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@latest/main.min.js'></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
+
+    <script type="text/javascript">
+      $(function () {
+        $('#datetimepicker1').datetimepicker({
+          // Your desired options
+          format: 'YYYY-MM-DD',
+          stepping: 30 // step the minutes selection in 30 minutes increments
+        });
+      });
+    </script>
+    <script>
+
+      let allDoctors = []; // Cache for all doctors
+
+      document.addEventListener('DOMContentLoaded', function() {
+        fetchDoctors();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth();
+        const searchInput = document.getElementById('searchDoctorInput');
+        const selectPicker = $('#medicalExpertSelect');
+
+        const calendarEl = document.getElementById('calendar');
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            initialView: 'dayGridMonth',
+            navLinks: true,
+            dayMaxEvents: true,
+            eventClick: handleEventClick,
+            eventContent: function(arg) {
+                var classNames = arg.event.extendedProps.isBooked ? 'event-booked' : 'event-not-booked';
+                var doctorName = arg.event.extendedProps.doctorName;
+                var timeText = arg.event.start.toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                });
+                return {
+                    html: `<div class="fc-event-slot ${classNames}">${timeText} - ${doctorName}</div>`
+                };
+            },
+            eventMouseEnter: function(info) {
+                fetch(`/api/doctor-link?doctor=${encodeURIComponent(info.event.extendedProps.doctorName)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        var doctorLink = data.doctorLink || '#';
+                        var tooltipContent = `
+                            <div>
+                                <p>Event Name: ${info.event.title}</p>
+                                <p>Doctor: <a href="${doctorLink}" target="_blank">${info.event.extendedProps.doctorName}</a></p>
+                                <p>Start Time: ${info.event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
+                                <p>Branch Name: ${info.event.extendedProps.branchName}</p>
+                            </div>
+                        `;
+                        tippy(info.el, {
+                            content: tooltipContent,
+                            allowHTML: true,
+                            interactive: true,
+                            placement: 'top',
+                            appendTo: document.body
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching doctor link:', error);
+                    });
+            },
+            datesSet: handleDatesSet,
+            dayCellDidMount: function(info) {
+                if (info.date < today) {
+                    info.el.classList.add('fc-disabled');
+                    info.el.style.pointerEvents = 'none';
+                }
+            }
+        });
+    
+        calendar.render();
+        setupMonthFilter();
+        updateNavButtons();
+        updateMonthHighlight(calendar.getDate().getMonth());
+    
+        function handleEventClick(info) {
+          if (!info || !info.event) {
+              console.error("No event info provided");
+              return;
+          }
+          const doctorName = info.event.extendedProps.doctorName;
+          fetch(`/api/booking-url?doctor=${encodeURIComponent(doctorName)}`)
+              .then(response => response.json())
+              .then(data => {
+                  if (data.bookingUrl) {
+                      window.open(data.bookingUrl, '_blank');
+                  } else {
+                      console.error("No booking URL found for this doctor");
+                  }
+              })
+              .catch(error => {
+                  console.error("Error fetching booking URL:", error);
+              });
+        }
+    
+        function handleDatesSet(dateInfo) {
+            updateMonthHighlight(dateInfo.start.getMonth());
+            fetchSlots();
+            updateNavButtons();
+        }
+    
+        function updateNavButtons() {
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+            const calendarDate = calendar.getDate();
+            const calendarMonth = calendarDate.getMonth();
+            const calendarYear = calendarDate.getFullYear();
+    
+            if (calendarYear < currentYear || (calendarYear === currentYear && calendarMonth <= currentMonth)) {
+                $('.fc-prev-button').prop('disabled', true);
+            } else {
+                $('.fc-prev-button').prop('disabled', false);
+            }
+        }
+        
+        function setupMonthFilter() {
+          const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+          const currentMonth = new Date().getMonth();
+          const monthFilter = document.getElementById('monthFilter');
+          monthFilter.innerHTML = '';
+          monthNames.slice(currentMonth).forEach((name, index) => {
+              const button = document.createElement('button');
+              button.className = 'btn btn-secondary';
+              button.textContent = name;
+              button.onclick = () => {
+                  calendar.gotoDate(new Date(new Date().getFullYear(), currentMonth + index));
+                  updateMonthHighlight(currentMonth + index);
+              };
+              monthFilter.appendChild(button);
+          });
+        }
+        
+        function gotoMonth(month) {
+            calendar.gotoDate(new Date(new Date().getFullYear(), month));
+        }
+        
+        function updateMonthHighlight(currentMonth) {
+          document.querySelectorAll('#monthFilter button').forEach((button, index) => {
+              button.classList.toggle('active', index === currentMonth - new Date().getMonth());
+          });
+        }
+    /*
+        function fetchDoctors() {
+            fetch('/api/doctors')
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to fetch');
+                    return response.json();
+                })
+                .then(doctors => {
+                    allDoctors = doctors;
+                    updateSelectPickerOptions(doctors);
+                })
+                .catch(err => {
+                    console.error('Failed to fetch doctors:', err);
+                });
+        }
+    
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchDoctors();
+        });
+    */
+    function fetchDoctors() {
+    fetch('/api/doctors') // Fetch data from the API endpoint
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to fetch');
+            return response.json();
+        })
+        .then(doctors => {
+            // Sort doctors alphabetically by name
+            doctors.sort((a, b) => a.name.localeCompare(b.name));
+            allDoctors = doctors; // Cache the fetched doctors
+            updateSelectPickerOptions(doctors); // Populate the dropdown
+        })
+        .catch(err => {
+            console.error('Failed to fetch doctors:', err);
+        });
+}
+        function updateSelectPickerFromSearch(searchTerm) {
+            const filteredDoctors = allDoctors.filter(doctor => doctor.name.toLowerCase().includes(searchTerm.toLowerCase()));
+            updateSelectPickerOptions(filteredDoctors);
+    
+            if (filteredDoctors.length === 1) {
+                const select = document.getElementById('medicalExpertSelect');
+                select.value = filteredDoctors[0].id;
+                $('.selectpicker').selectpicker('refresh');
+                calendar.refetchEvents();
+                updateMonthHighlight(currentMonth);
+                fetchSlots();
+            }
+        }
+    
+        function updateSelectPickerOptions(doctors) {
+            const select = document.getElementById('medicalExpertSelect');
+            select.innerHTML = '';
+            doctors.forEach(doctor => {
+                const option = new Option(doctor.name, doctor.id);
+                select.appendChild(option);
+            });
+            $('.selectpicker').selectpicker('refresh');
+        }
+    
+        document.getElementById('searchDoctorInput').addEventListener('input', function() {
+            const searchTerm = this.value.trim();
+            if (searchTerm) {
+                updateSelectPickerFromSearch(searchTerm);
+            } else {
+                const select = document.getElementById('medicalExpertSelect');
+                select.value = '';
+                $(select).selectpicker('deselectAll');
+                $(select).selectpicker('refresh');
+                calendar.refetchEvents();
+                calendar.removeAllEvents();
+                gotoMonth(currentMonth);
+                calendar.today();
+                updateMonthFilterToCurrent(calendar);
+                fetchSlots(calendar);
+            }
+        });
+    
+        fetchDoctors();
+    
+        function fetchSlots() {
+          const selectedDoctors = $('#medicalExpertSelect').val() || [];
+          const queryParams = new URLSearchParams({
+              start: calendar.view.activeStart.toISOString(),
+              end: calendar.view.activeEnd.toISOString()
+          });
+  
+          if (selectedDoctors.length > 0) {
+              selectedDoctors.forEach(doctorId => queryParams.append('doctor_id', doctorId));
+          } else {
+              queryParams.append('doctor_id', 'all');
+          }
+  
+          fetch(`/api/slots?${queryParams.toString()}`)
+              .then(response => response.json())
+              .then(events => {
+                  calendar.removeAllEvents();
+                  events.forEach(event => {
+                      calendar.addEvent({
+                          title: event.status,
+                          start: event.start,
+                          end: event.end,
+                          color: event.status === 'Booked' ? 'blue' : 'green',
+                          extendedProps: {
+                              isBooked: event.status === 'Booked',
+                              doctorName: event.doctor_name,
+                              branchName: event.branch_name,
+                              bookingUrl: event.booking_url
+                          }
+                      });
+                  });
+              })
+              .catch(err => {
+                  console.error('Error fetching slots:', err);
+                  alert('An error occurred while fetching the slots. Please try again.');
+              });
+        }
+    
+        $('#medicalExpertSelect').on('change', fetchSlots);
+        $('.fc-prev-button, .fc-next-button').click(() => updateMonthHighlight(calendar.getDate().getMonth()));
+
+
+      });
+    </script>
+    
+    <!-- Bootstrap Select and its dependencies -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
+    <!-- Moment.js is a dependency for Tempus Dominus -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <!-- Tempus Dominus Bootstrap 4 scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/js/tempusdominus-bootstrap-4.min.js"></script>
+    
+  </body>
+</html>

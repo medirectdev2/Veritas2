@@ -1,0 +1,664 @@
+/* General reset and base styles */
+body, p, a, button {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: small;
+}
+
+h1, label {
+  font-family: Arial, Helvetica, sans-serif;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: medium;
+}
+
+/* Navbar styles */
+.navbar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  background-color: #ffffff; /* Adjust the background color as needed */
+  padding: 10px 20px; /* Adjust the padding as needed */
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center; /* Centers the logo vertically */
+}
+
+/* Base CSS for the logo */
+.navbar-brand img {
+
+  height: auto;     /* Maintain aspect ratio */
+}
+
+/* Small screens (up to 767px) */
+@media (max-width: 767px) {
+  .navbar-brand img {
+      max-width: 300px; /* Adjust as per your needs */
+  }
+}
+
+/* Medium screens (768px and up) */
+@media (min-width: 768px) {
+  .navbar-brand img {
+      max-width: 400px; /* Adjust as per your needs */
+  }
+}
+
+/* Large screens (992px and up) */
+@media (min-width: 992px) {
+  .navbar-brand img {
+      max-width: 700px; /* Adjust as per your needs */
+  }
+}
+
+/* Extra large screens (1200px and up) */
+@media (min-width: 1200px) {
+  .navbar-brand img {
+      max-width: 800px; /* Full width of the original image */
+  }
+}
+
+.nav-links {
+  display: flex;
+  flex-grow: 1; /* This will push the contact-info to the right */
+  justify-content: flex-start; /* Align the nav items to the start */
+}
+
+.nav-item {
+  color: rgb(71, 130, 234);
+  padding: 0 10px; /* Adjust the padding as needed */
+  text-decoration: none;
+  font-size: 1rem; /* Adjust the font size as needed */
+  display: inline-block;
+  font-weight: bold;
+}
+
+/* Add spacing between the dropdown and the search bar */
+.sidebar .selectpicker {
+  margin-bottom: 20px; /* Add space below the dropdown */
+}
+
+.input-group.mb-3 {
+  margin-top: 20px; /* Add space above the search bar */
+}
+
+
+/* Adjust the font size and padding for the contact-info section */
+.contact-info {
+  display: flex;
+  justify-content: flex-end; /* Align contact info items to the end */
+  font-size: 2rem; /* Increase the font size */
+  padding: 10px 20px; /* Add padding to make it more prominent */
+}
+
+.contact-info a {
+  color: #063f80;
+  text-decoration: none;
+  display: flex;
+  align-items: center; /* Aligns the icon and text vertically */
+  margin-left: 30px; /* Space between contact info items */
+  font-size: 1rem; /* Increase the font size of the text */
+}
+
+.contact-info a i {
+  margin-right: 5px; /* Space between icon and text */
+  font-size: 1.4rem; /* Increase the size of the icons */
+}
+
+/* Adjust the font size for the hotline only */
+.contact-info a.hotline {
+  font-size: 1.2rem; /* Increase the font size for the hotline */
+  color: #063f80;
+  text-decoration: none;
+  display: flex;
+  align-items: center; /* Aligns the icon and text vertically */
+  margin-left: 30px; /* Space between contact info items */
+}
+
+.contact-info a.hotline i {
+  font-size: 1.2rem; /* Increase the size of the hotline icon */
+}
+
+/* Header styles */
+.main-header {
+  position: relative;
+  width: 100%;
+  height: 400px; /* Adjust the height as needed */
+}
+
+.header-image {
+  background-image: url('static/images/veritas.png'); /* Correct the image path */
+  background-size: cover;
+  background-position: center;
+  width: 100%;
+  height: 100%;
+}
+
+.header-buttons {
+  position: absolute;
+  bottom: 20px; /* Adjust the positioning as needed */
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+}
+
+.header-buttons button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.header-buttons button:hover {
+  background-color: #0056b3;
+}
+
+/* Adjusting header text sizes */
+.header-content h1 {
+  font-size: 3rem; /* Increase the size of the main header text */
+  margin-bottom: 1rem; /* Adjust the bottom margin as needed */
+  text-align: center;
+}
+
+.header-content p {
+  font-size: 2.5rem; /* Increase the size of the paragraph text */
+  margin-bottom: 2rem; /* Adjust the bottom margin as needed */
+}
+
+.header-buttons {
+  display: flex;
+  justify-content: center;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.header-buttons button {
+  padding: 1rem 2rem; /* Increase padding to make buttons larger */
+  border-radius: 5px; /* Rounded corners, adjust as desired */
+  font-size: 1.2rem; /* Increase font size for larger text in the buttons */
+  margin: 0 1rem; /* Maintain some space between buttons */
+  border: none;
+  background-color: #0056b3; /* Button color */
+  color: white;
+  cursor: pointer;
+}
+
+.header-buttons button:hover {
+  background-color: #004494; /* Button hover effect */
+}
+
+/* Ensure the .main-header flex container does not allow wrapping and the .header-blackout grows as needed */
+.main-header {
+  flex-wrap: nowrap;
+}
+
+.header-blackout {
+  flex-grow: 1;
+}
+
+/* Footer styles */
+.site-footer {
+  text-align: center;
+  padding: 20px;
+  background-color: #090d27;
+  color: rgb(246, 246, 248);
+}
+
+.container-fluid,
+.container-fluid > .row,
+.header,
+.navbar {
+  margin-top: 0 !important; /* Ensures no space above these elements */
+  padding-top: 0 !important; /* Ensures no padding above these elements */
+}
+
+/* Main calendar container should take full width */
+.main-content {
+  padding: 10px;
+  background-color: #fff;
+  border-left: 1px solid #ddd;
+  margin-top: 0 !important; /* Ensures the main content starts at the top */
+  flex: 1; /* Allow main content to take up remaining space */
+  max-width: 100%; /* Ensures no extra space on the right */
+}
+
+/* Adjustments for the calendar container to fill the remaining space */
+#calendar-container {
+  padding: 10px;
+  margin-top: 0 !important; /* Remove space above the calendar */
+  max-width: 100%; /* Ensures no extra space on the right */
+}
+
+#calendar {
+  width: 100%; /* Ensures the calendar takes up full width */
+  margin: 0 auto; /* Center the calendar if there's extra space */
+}
+
+.fc-header-toolbar {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  padding-top: 0 !important; /* Remove padding that might cause space */
+}
+
+.fc .fc-toolbar-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-grow: 1;
+  margin: 0 10px;
+}
+
+.fc-button-group > .fc-button {
+  padding: 0 0.5em;
+}
+
+.fc-button {
+  font-size: smaller;
+}
+
+.fc-toolbar-chunk {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0 !important; /* Ensure no extra space above the toolbar */
+}
+
+.fc-daygrid-day.fc-day-past {
+  background-color: white; /* Apply a white background to past days */
+  opacity: 0.5; /* Adjust opacity to make it look shaded */
+  pointer-events: none; /* Disable clicking on past days */
+}
+
+.fc-daygrid-day.fc-day-past .fc-daygrid-day-top {
+  background-color: white;
+}
+
+.fc-daygrid-day.fc-day-past .fc-daygrid-day-events {
+  background-color: white;
+  opacity: 0.5;
+}
+
+.event-booked {
+  background-color: blue;
+  color: white;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.event-not-booked {
+  background-color: green;
+  color: white;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.dashboard-header {
+  background-color: #f8f9fa;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stats-panel {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+}
+
+.stats-panel > div {
+  margin: 0 10px;
+  text-align: center;
+}
+
+.filter-panel {
+  padding: 10px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background-color: #090d27;
+  padding: 1rem;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sidebar-toggle {
+  display: none;
+  cursor: pointer;
+  padding: 10px;
+  font-size: 1.5rem;
+  color: white;
+}
+
+.sidebar .btn-group-toggle {
+  width: 100%;
+}
+
+.sidebar .btn-group-toggle .btn {
+  text-align: left;
+  margin-top: 0.5rem;
+  white-space: normal;
+  background-color: #e9ecef;
+  color: black;
+}
+
+.sidebar label {
+  display: block;
+  margin-top: 1rem;
+}
+
+.dropdown-checkboxes {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-checkboxes-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-checkboxes-content label {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-checkboxes-content label:hover {
+  background-color: #f1f1f1;
+}
+
+.dropdown-checkboxes .dropdown-checkboxes-button:after {
+  content: '▼';
+  padding-left: 5px;
+}
+
+.show {
+  display: block;
+}
+
+.no-gutters {
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.no-gutters > .col,
+.no-gutters > [class*="col-"] {
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.container-fluid {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.container-fluid > .row, .container-fluid {
+  padding-right: 0;
+  padding-left: 0;
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.header {
+  background-color: #090d27;
+  color: white;
+  padding: 5px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 0; /* Eliminate any bottom margin */
+}
+
+.header-title {
+  text-align: center;
+  flex-grow: 1;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.header-logo {
+  max-height: 80px;
+  width: auto;
+  margin: 0 auto;
+}
+
+.btn.active, .btn:active {
+  color: #fff; /* White text */
+  background-color: #566270; /* Bootstrap primary color */
+  border-color: #566270; /* Consistent border color */
+}
+
+#monthFilter .btn.focus {
+  background-color: #566270; /* Bootstrap primary color */
+  color: white;
+}
+
+#monthFilter.ready {
+  visibility: visible; /* Show only when it's fully loaded and updated */
+}
+
+#monthFilter {
+  display: flex;
+  flex-direction: column; /* This will stack the buttons vertically */
+  padding: 0;
+  margin: 0;
+  width: 100%; /* Adjust the width as needed */
+  height: 100%; /* Adjust based on your layout requirements */
+}
+#monthFilter button {
+  width: 100%; /* Ensure buttons stretch to full width of the container */
+  margin-bottom: 5px; /* Adds a little space between the buttons */
+}
+
+.modal-body {
+  max-height: 1000px; /* Adjust based on your needs */
+  overflow-y: auto;
+}
+
+#bookingModal .modal-body {
+  max-height: calc(100vh - 200px);  /* Adjust based on your header and footer sizes */
+  overflow-y: auto;  /* Enables vertical scrolling if the content is taller than the max-height */
+}
+
+@media (max-width: 768px) {
+  .row.no-gutters {
+    flex-direction: column;
+  }
+
+  .sidebar, .main-content {
+    width: 100%;
+  }
+
+  .header {
+    padding: 5px;
+    text-align: center;
+  }
+
+  .header-title {
+    font-size: 1.5rem;
+  }
+
+  .logo-container {
+    justify-content: center;
+    margin: 10px 0;
+  }
+
+  .header-logo {
+    height: auto;
+    max-width: 80%;
+    max-height: 80px;
+  }
+
+  #calendar-container {
+    padding: 5px;
+  }
+
+  .fc-header-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .fc .fc-toolbar-title {
+    margin-bottom: 10px;
+  }
+
+  .fc-button-group > .fc-button, .fc-today-button {
+    padding: 0.2em 0.6em;
+    font-size: 0.7em;
+  }
+
+  .fc-toolbar-chunk {
+    justify-content: flex-start;
+  }
+
+  .fc-prev-button, .fc-next-button {
+    display: none;
+  }
+}
+
+.fc .fc-button-primary {
+  height: auto;
+  padding: 0.2em 0.6em;
+}
+
+.sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  cursor: pointer;
+}
+
+.sidebar {
+  z-index: 101;
+}
+
+/* Mobile and small screen adjustments */
+@media (max-width: 768px) {
+  /* Stack the navbar items vertically and center them */
+  .navbar {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  
+
+  .nav-links {
+    width: 100%;
+    justify-content: center;
+    padding: 0;
+    margin-left: 1.5rem;
+  }
+
+  .nav-item {
+    padding: 8px 0; /* Provide some vertical padding between items */
+    width: 100%; /* Full width for each nav item */
+    text-align: center; /* Center the text within each nav item */
+    margin-left: -3.5rem;
+  }
+
+  /* Ensure the header text is responsive and visible */
+  .header-blackout {
+    order: -1; /* Place header blackout above the header image on small screens */
+    padding: 15px; /* More padding */
+    font-size: 1.2rem; /* Smaller font size for header text */
+  }
+
+  /* Header image adjustments */
+  .header-image {
+    width: 100%; /* Full width */
+    order: 1; /* Ensure this comes after the blackout text */
+    height: auto; /* Auto-adjust height */
+    background-size: cover; /* Cover the area with the image */
+    background-position: center; /* Center the image */
+  }
+
+  /* Icons within the header should also be responsive */
+  .header-icons .icon-item img {
+    width: 60px; /* Smaller icons on mobile */
+  }
+
+  .header-icons .icon-item p {
+    font-size: 0.75rem; /* Smaller text for icon labels */
+  }
+}
+
+/* At the bottom of your CSS file, to override other styles */
+@media (max-width: 768px) {
+  .navbar {
+    justify-content: center; /* Center navbar items */
+  }
+
+  .nav-links {
+    flex-grow: 0; /* Prevent it from pushing contact-info */
+    justify-content: center; /* Center links */
+  }
+
+  .contact-info {
+    display: none; /* Hide contact info on smaller screens if it causes issues */
+  }
+
+  .main-header {
+    flex-direction: column; /* Stack the header content */
+    align-items: center; /* Center the header content */
+  }
+
+  .header-blackout {
+    width: 100%; /* Full width */
+    text-align: center; /* Center the text */
+    margin-left: 0.5rem;
+  }
+
+  .header-image {
+    display: none;
+    height: 0; /* Hide the image and collapse the space */
+  }
+  .main-header {
+    position: relative;
+    width: 100%;
+    height: 0px; /* Adjust the height as needed */
+  }
+  .header-content h1,
+  .header-content p {
+    text-align: center; /* Center the header text */
+  }
+
+  .header-buttons button {
+    padding: 0.5rem 0.5rem; /* Increase padding to make buttons larger */
+    border-radius: 5px; /* Rounded corners, adjust as desired */
+    font-size: 1rem; /* Increase font size for larger text in the buttons */
+    margin: 0 1rem; /* Maintain some space between buttons */
+    border: none;
+  }
+}
