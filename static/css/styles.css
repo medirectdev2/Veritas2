@@ -38,28 +38,28 @@ h1, label {
 /* Small screens (up to 767px) */
 @media (max-width: 767px) {
   .navbar-brand img {
-      max-width: 300px; /* Adjust as per your needs */
+      max-width: 200px; /* Adjust as per your needs */
   }
 }
 
 /* Medium screens (768px and up) */
 @media (min-width: 768px) {
   .navbar-brand img {
-      max-width: 400px; /* Adjust as per your needs */
+      max-width: 300px; /* Adjust as per your needs */
   }
 }
 
 /* Large screens (992px and up) */
 @media (min-width: 992px) {
   .navbar-brand img {
-      max-width: 700px; /* Adjust as per your needs */
+      max-width: 500px; /* Adjust as per your needs */
   }
 }
 
 /* Extra large screens (1200px and up) */
 @media (min-width: 1200px) {
   .navbar-brand img {
-      max-width: 800px; /* Full width of the original image */
+      max-width: 500px; /* Full width of the original image */
   }
 }
 
