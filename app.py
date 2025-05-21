@@ -27,6 +27,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = (
 )
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+from doctor_invoice import doctor_invoice
+app.register_blueprint(doctor_invoice)
 
 booking_urls = {
     "Heng Tan": "https://bookings.medirect.com.au/MDLogin.aspx?next=booking",
