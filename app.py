@@ -31,6 +31,8 @@ from doctor_invoice import doctor_invoice
 app.register_blueprint(doctor_invoice)
 from doctor_calendar import doctor_calendar
 app.register_blueprint(doctor_calendar)
+from doctor_analysis import doctor_analysis
+app.register_blueprint(doctor_analysis)
 
 booking_urls = {
     "Heng Tan": "https://bookings.medirect.com.au/MDLogin.aspx?next=booking",
