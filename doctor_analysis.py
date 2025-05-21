@@ -7,7 +7,7 @@ doctor_analysis = Blueprint('doctor_analysis', __name__)
 
 @doctor_analysis.route('/api/doctor-analysis', methods=['GET'])
 def get_doctor_analysis():
-    year = request.args.get('year', default=None, type=int)
+    year = request.args.get('year', type=int)
     quarter = request.args.get('quarter', type=int)
     month = request.args.get('month', type=int)
     doctor_id = request.args.get('doctor_id', type=int)
@@ -15,11 +15,11 @@ def get_doctor_analysis():
     conditions = []
     params = {}
 
+    # Default to current year if no year is provided
     if year:
         conditions.append("YEAR(InvoiceDate) = :year")
         params["year"] = year
     else:
-        # default to current year if not specified
         conditions.append("YEAR(InvoiceDate) = YEAR(GETDATE())")
 
     if quarter:
@@ -93,19 +93,20 @@ def get_doctor_analysis():
     """)
 
     try:
-        result = db.session.execute(sql, params).fetchall()
+        result = db.session.execute(sql, params).mappings().fetchall()
+
         response = [
             {
-                "doctor_id": row.DoctorID,
+                "doctor_id": row["DoctorID"],
                 "medical_expert": row["Medical Expert"],
-                "total_exc_gst": float(row.TotalExGST),
-                "total_inc_gst": float(row.TotalIncGST),
-                "total_gst": float(row.TotalGST),
-                "amount_paid": float(row.TotalPaid),
-                "balance_or_overpayment": float(row.BalanceOrOverpaid),
-                "invoice_count": int(row.TotalInvoices),
-                "percent_of_invoices": round(row.PercentOfInvoices or 0, 2),
-                "percent_of_total_revenue": round(row.PercentOfOverallRevenue or 0, 2)
+                "total_exc_gst": float(row["TotalExGST"]),
+                "total_inc_gst": float(row["TotalIncGST"]),
+                "total_gst": float(row["TotalGST"]),
+                "amount_paid": float(row["TotalPaid"]),
+                "balance_or_overpayment": float(row["BalanceOrOverpaid"]),
+                "invoice_count": int(row["TotalInvoices"]),
+                "percent_of_invoices": round(row["PercentOfInvoices"] or 0, 2),
+                "percent_of_total_revenue": round(row["PercentOfOverallRevenue"] or 0, 2)
             }
             for row in result
         ]
