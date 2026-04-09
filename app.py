@@ -3,6 +3,7 @@ import requests
 import re
 import os
 import logging
+import time
 import pytz
 from flask import Flask, request, jsonify, current_app, render_template
 from flask_sqlalchemy import SQLAlchemy
@@ -34,35 +35,22 @@ app.register_blueprint(doctor_calendar)
 from doctor_analysis import doctor_analysis
 app.register_blueprint(doctor_analysis)
 
-booking_urls = {
-    "Heng Tan": "https://bookings.medirect.com.au/MDLogin.aspx?next=booking",
-    "Iyad Dayoub": "https://bookings.medirect.com.au/MDLogin.aspx?next=booking",
-    "Tapuwa Musuka": "https://bookings.medirect.com.au/new?n=tapuwamusuka",
-    "Siamak Seresti": "https://bookings.medirect.com.au/new?n=siamakseresti",
-    "Nicole Leeks": "https://bookings.medirect.com.au/new?n=nicoleleeks",
-    "Olivia Lee": "https://bookings.medirect.com.au/new?n=olivialee",
-    "Matthew Samuel": "https://bookings.medirect.com.au/new?n=mathewsamuel",
-    "Reza Feizerfan": "https://bookings.medirect.com.au/new?n=rezafeizerfan",
-    "David Colvin": "https://bookings.medirect.com.au/new?n=davidcolvin",
-    "Jessica Johnson": "https://bookings.medirect.com.au/new?n=jessicajohnson",
-    "Andrew Thomson": "https://bookings.medirect.com.au/new?n=andrewthomson"
+VERITAS_API_URL = "https://devcrmdata-befnckfse5e0eaby.australiaeast-01.azurewebsites.net/api/veritas-doctors"
+VERITAS_API_KEY = "38fec754f1cfcb2df810cd076a1190bd"
+_veritas_cache = {"data": None, "ts": 0}
+_CACHE_TTL = 600  # 10 minutes
 
-}
+def get_veritas_doctors():
+    now = time.time()
+    if _veritas_cache["data"] is None or now - _veritas_cache["ts"] > _CACHE_TTL:
+        resp = requests.get(VERITAS_API_URL, headers={"X-API-Key": VERITAS_API_KEY}, timeout=10)
+        resp.raise_for_status()
+        _veritas_cache["data"] = resp.json().get("doctors", [])
+        _veritas_cache["ts"] = now
+    return _veritas_cache["data"]
 
-# Mapping of doctor names to their WordPress page URLs
-doctor_links = {
-    "Heng Tan": "https://medirect.com.au/drhengtan/",
-    "Iyad Dayoub": "https://medirect.com.au/driyaddayoub/",
-    "Tapuwa Musuka": "https://medirect.com.au/drtapuwamusuka/",
-    "Siamak Seresti": "https://medirect.com.au/mrsiamakseresti/",
-    "Nicole Leeks": "https://medirect.com.au/drnicoleleeks/",
-    "Olivia Lee": "https://medirect.com.au/drolivialee/",
-    "Matthew Samuel": "https://medirect.com.au/drmathewsamuel/",
-    "Reza Feizerfan": "https://medirect.com.au/drrezafeizerfan/",
-    "David Colvin": "https://medirect.com.au/mrdavidcolvin/",
-    "Jessica Johnson": "https://medirect.com.au/drjessicajohnson/",
-    "Andrew Thomson": "https://medirect.com.au/drandrewthomson/"
-}
+def get_veritas_doctor_ids():
+    return [int(d["doctor_id"]) for d in get_veritas_doctors() if d.get("doctor_id")]
 
 # Simple incremental reference ID generator (for example purposes only)
 ref_id_counter = 1
@@ -76,24 +64,33 @@ def month_number_to_name(month_num):
 @app.route('/api/booking-url', methods=['GET'])
 def get_booking_url():
     doctor_name = request.args.get('doctor')
-    if doctor_name in booking_urls:
-        return jsonify({'bookingUrl': booking_urls[doctor_name]})
-    else:
-        return jsonify({'error': 'Doctor not found'}), 404
+    doctors = get_veritas_doctors()
+    for d in doctors:
+        if f"{d['first_name']} {d['last_name']}" == doctor_name:
+            url = d.get('medirect_booking_page_url')
+            if url:
+                return jsonify({'bookingUrl': url})
+            break
+    return jsonify({'error': 'Doctor not found'}), 404
 
 @app.route('/api/doctor-link', methods=['GET'])
 def get_doctor_link():
     doctor_name = request.args.get('doctor')
-    if doctor_name in doctor_links:
-        return jsonify({'doctorLink': doctor_links[doctor_name]})
-    else:
-        return jsonify({'error': 'Doctor not found'}), 404
+    doctors = get_veritas_doctors()
+    for d in doctors:
+        if f"{d['first_name']} {d['last_name']}" == doctor_name:
+            record_id = d.get('record_id')
+            if record_id:
+                return jsonify({'doctorLink': f"https://medirect.com.au/directory/doctors/?recordid={record_id}"})
+            break
+    return jsonify({'error': 'Doctor not found'}), 404
 
 @app.route('/api/doctors', methods=['GET'])
 def get_doctors():
-    # Define your SQL query using a Common Table Expression (CTE)
-    sql_query = text("""
-        SELECT DISTINCT 
+    doctor_ids = get_veritas_doctor_ids()
+    placeholders = ', '.join([f':vid{i}' for i in range(len(doctor_ids))])
+    sql_query = text(f"""
+        SELECT DISTINCT
             u.FirstName + ' ' + u.LastName AS FullName,
             u.Email,
 			u.Position,
@@ -104,12 +101,13 @@ def get_doctors():
         INNER JOIN medirect.dbo.MEDirectBranch b ON c.BranchId = b.Id
         LEFT JOIN medirect.dbo.MEDirectCaseService cs ON s.CaseId = cs.Id
         LEFT JOIN medirect.dbo.MEDirectBranch mb ON mb.Id = c.BranchId
-		WHERE u.Id IN (8562, 8567, 8566, 8565, 8560,8561,8535,8533,8613,8678,8677)
+		WHERE u.Id IN ({placeholders})
     """)
-    
+    params = {f'vid{i}': did for i, did in enumerate(doctor_ids)}
+
     try:
         # Execute the query using db.session.execute
-        result = db.session.execute(sql_query).fetchall()
+        result = db.session.execute(sql_query, params).fetchall()
         # Convert to a list of dictionaries
         doctors = [{'id': row.DoctorID, 'name': row.FullName} for row in result]  # Check the attribute names
         # Return JSON response
@@ -168,7 +166,9 @@ def get_slots():
     except ValueError as e:
         return jsonify({'error': 'Invalid date format'}), 400
 
-    sql_query = """
+    veritas_ids = get_veritas_doctor_ids()
+    vid_placeholders = ', '.join([f':vid{i}' for i in range(len(veritas_ids))])
+    sql_query = f"""
         SELECT DISTINCT
             u.FirstName + ' ' + u.LastName as FullName,
             u.Email,
@@ -192,12 +192,13 @@ def get_slots():
         INNER JOIN medirect.dbo.MEDirectBranch b ON c.BranchId = b.Id
         LEFT JOIN medirect.dbo.MEDirectCaseService cs On s.CaseId = cs.Id
         LEFT JOIN medirect.dbo.MEDirectBranch mb On mb.id = c.BranchId
-        WHERE u.Id IN (8562, 8567, 8566, 8565, 8560,8561,8535,8533,8613,8678,8677) and s.IsBooked = 0
+        WHERE u.Id IN ({vid_placeholders}) and s.IsBooked = 0
         AND s.StartDateTime >= :start AND s.EndDateTime <= :end
     """
 
     # Set up parameters for the query
-    params = {'start': start_date, 'end': end_date}
+    params = {f'vid{i}': did for i, did in enumerate(veritas_ids)}
+    params.update({'start': start_date, 'end': end_date})
 
     # Check if 'all' is in doctor_ids, which means no doctor_id filter should be applied
     if 'all' not in doctor_ids:

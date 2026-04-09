@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Veritas2 — Data Flow Diagram</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e0e6f0;
+      padding: 32px 24px;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      margin-bottom: 6px;
+      color: #ffffff;
+    }
+    .subtitle {
+      font-size: 0.85rem;
+      color: #8892a4;
+      margin-bottom: 36px;
+    }
+
+    /* ── Section tabs ── */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+    .tab {
+      padding: 7px 18px;
+      border-radius: 6px;
+      border: 1px solid #2c3347;
+      background: #181d2a;
+      color: #8892a4;
+      cursor: pointer;
+      font-size: 0.83rem;
+      transition: all .15s;
+    }
+    .tab.active, .tab:hover {
+      background: #2563eb;
+      border-color: #2563eb;
+      color: #fff;
+    }
+
+    /* ── Diagram panels ── */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .diagram-wrap {
+      background: #181d2a;
+      border: 1px solid #232a3b;
+      border-radius: 12px;
+      padding: 32px 24px;
+      overflow-x: auto;
+    }
+    .mermaid { min-width: 600px; }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      color: #8892a4;
+    }
+    .legend-dot {
+      width: 14px; height: 14px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    /* ── Endpoint table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      margin-top: 4px;
+    }
+    th {
+      text-align: left;
+      padding: 10px 14px;
+      background: #232a3b;
+      color: #8892a4;
+      font-weight: 500;
+    }
+    td {
+      padding: 9px 14px;
+      border-top: 1px solid #232a3b;
+      vertical-align: top;
+    }
+    tr:hover td { background: #1e2436; }
+    code {
+      background: #232a3b;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Cascadia Code', monospace;
+      font-size: 0.8rem;
+      color: #7dd3fc;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .badge-get   { background: #14532d; color: #4ade80; }
+    .method-col  { width: 60px; }
+    .path-col    { width: 220px; }
+
+    h3 { font-size: 1rem; color: #cbd5e1; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+
+<h1>Veritas2 — Data Flow Diagram</h1>
+<p class="subtitle">Veritas MedicoLegal · Flask + MS SQL Server · Azure App Service</p>
+
+<div class="tabs">
+  <div class="tab active" onclick="show('system')">System Overview</div>
+  <div class="tab" onclick="show('request')">Request Lifecycle</div>
+  <div class="tab" onclick="show('db')">Database Schema</div>
+  <div class="tab" onclick="show('analytics')">Analytics Flow</div>
+  <div class="tab" onclick="show('endpoints')">API Endpoints</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!--  TAB 1 — SYSTEM OVERVIEW                              -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div id="system" class="panel active">
+  <div class="diagram-wrap">
+    <div class="mermaid">
+flowchart TD
+    subgraph CLIENT["🌐  Browser / Client"]
+        UI["calendar2.html\n(FullCalendar + Bootstrap)"]
+        JS["JavaScript\n(jQuery, event handlers)"]
+    end
+
+    subgraph AZURE["☁️  Azure App Service"]
+        GUN["Gunicorn\n4 workers · port 8080"]
+        subgraph FLASK["Flask Application"]
+            APP["app.py\nCore routes"]
+            INV["doctor_invoice.py\nBlueprint"]
+            CAL["doctor_calendar.py\nBlueprint"]
+            ANA["doctor_analysis.py\nBlueprint"]
+        end
+    end
+
+    subgraph DB["🗄️  MS SQL Server (Vinci Portal)"]
+        direction TB
+        BC["MEDirectBookingCalendar"]
+        BS["MEDirectBookingSlot"]
+        UA["MEDirectUserAccount"]
+        BR["MEDirectBranch"]
+        CI["MEDirectCaseInvoice"]
+        MC["MEDirectCase"]
+        CS["MEDirectCaseService"]
+        CC["MEDirectContactCategory"]
+        ORG["MEDirectOrganisation"]
+        PI["MEDirectCasePaidInvoice"]
+    end
+
+    subgraph EXT["🔗  External Systems"]
+        WP["WordPress\nDoctor profiles\nmedirect.com.au"]
+        BK["MediDirect Booking\nbookings.medirect.com.au"]
+    end
+
+    subgraph CICD["🚀  CI/CD  (GitHub Actions)"]
+        GH["GitHub Repository\n(dev / main branches)"]
+        AZ["Azure Deploy\nZip deployment"]
+    end
+
+    UI --> JS
+    JS -- "HTTP GET (fetch)" --> GUN
+    GUN --> FLASK
+    APP -- "SQLAlchemy + raw SQL" --> DB
+    INV -- "SQLAlchemy + raw SQL" --> DB
+    CAL -- "SQLAlchemy + raw SQL" --> DB
+    ANA -- "SQLAlchemy + raw SQL" --> DB
+    JS -- "redirect on click" --> BK
+    JS -- "tooltip link" --> WP
+    GH --> AZ --> AZURE
+
+    style CLIENT fill:#1e3a5f,stroke:#2563eb,color:#e0e6f0
+    style AZURE  fill:#1a2e1a,stroke:#16a34a,color:#e0e6f0
+    style FLASK  fill:#1f2d1f,stroke:#22c55e,color:#e0e6f0
+    style DB     fill:#2d1f1a,stroke:#ea580c,color:#e0e6f0
+    style EXT    fill:#2d1a2d,stroke:#9333ea,color:#e0e6f0
+    style CICD   fill:#1a1a2d,stroke:#6366f1,color:#e0e6f0
+    </div>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div> Browser / Client</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div> Flask / Azure</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ea580c"></div> SQL Server (Vinci)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#9333ea"></div> External integrations</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#6366f1"></div> CI/CD pipeline</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!--  TAB 2 — REQUEST LIFECYCLE                            -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div id="request" class="panel">
+  <div class="diagram-wrap">
+    <div class="mermaid">
+sequenceDiagram
+    actor User
+    participant UI  as calendar2.html
+    participant JS  as JavaScript (jQuery)
+    participant API as Flask API (app.py)
+    participant DB  as SQL Server (Vinci)
+    participant WP  as WordPress
+    participant BK  as MediDirect Booking
+
+    User->>UI: Open / (root URL)
+    UI->>JS: Page load
+
+    JS->>API: GET /api/doctors
+    API->>DB: SELECT distinct doctors WHERE Id IN (11 IDs)
+    DB-->>API: rows (DoctorID, FullName)
+    API-->>JS: JSON [{id, name}, …]
+    JS-->>UI: Populate doctor filter dropdown
+
+    JS->>API: GET /api/available-months [?doctor_id=…]
+    API->>DB: SELECT DISTINCT MONTH(StartDateTime) WHERE branch LIKE HSA
+    DB-->>API: month numbers
+    API-->>JS: JSON ["Jan","Feb",…]
+    JS-->>UI: Populate month filter
+
+    User->>UI: Select doctor / month, navigate calendar
+    JS->>API: GET /api/slots?start=…&end=…[&doctor_id=…]
+    API->>DB: SELECT slots WHERE IsBooked=0, date range, optional doctor filter\n(UTC → Australia/Sydney timezone conversion)
+    DB-->>API: slot rows
+    API-->>JS: JSON [{doctor_id, doctor_name, branch_name, start, end, status}]
+    JS-->>UI: Render events on FullCalendar (green = available)
+
+    User->>UI: Hover over event
+    JS->>API: GET /api/doctor-link?doctor=Name
+    API-->>JS: JSON {doctorLink: "https://medirect.com.au/…"}
+    JS-->>UI: Show Tippy.js tooltip with profile link
+
+    User->>UI: Click event
+    JS->>API: GET /api/booking-url?doctor=Name
+    API-->>JS: JSON {bookingUrl: "https://bookings.medirect.com.au/…"}
+    JS-->>BK: Redirect to external booking page
+
+    User->>WP: (optional) Follow doctor profile link
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!--  TAB 3 — DATABASE SCHEMA                              -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div id="db" class="panel">
+  <div class="diagram-wrap">
+    <div class="mermaid">
+erDiagram
+    MEDirectUserAccount {
+        int Id PK
+        string FirstName
+        string LastName
+        string Email
+        string Position
+    }
+
+    MEDirectBookingCalendar {
+        int Id PK
+        int UserId FK
+        int BranchId FK
+    }
+
+    MEDirectBookingSlot {
+        int Id PK
+        int CalendarId FK
+        int CaseId FK
+        datetime StartDateTime
+        datetime EndDateTime
+        bit IsBooked
+    }
+
+    MEDirectBranch {
+        int Id PK
+        string Name
+        string Address1
+        string City
+        string State
+        string Postcode
+        float Lat
+        float Lng
+    }
+
+    MEDirectCase {
+        int Id PK
+        string CaseNo
+        int CaseTypeId FK
+        int CaseWorkerId FK
+        datetime MDReportDue
+    }
+
+    MEDirectCaseService {
+        int Id PK
+        string ServiceName
+    }
+
+    MEDirectCaseInvoice {
+        int Id PK
+        string CaseNo FK
+        int BillToContactId FK
+        datetime InvoiceDate
+        decimal TotalEx
+        decimal TotalInc
+        decimal TotalGST
+        bit IsActive
+    }
+
+    MEDirectCasePaidInvoice {
+        int Id PK
+        int InvoiceId FK
+        decimal AmountPaid
+    }
+
+    MEDirectContact {
+        int Id PK
+        int OrganisationId FK
+        int DefaultContactCategoryId FK
+    }
+
+    MEDirectOrganisation {
+        int Id PK
+        string OrganisationName
+    }
+
+    MEDirectContactCategory {
+        int Id PK
+        string Name
+    }
+
+    MEDirectCaseType {
+        int Id PK
+        string Name
+    }
+
+    MEDirectUserAccount     ||--o{ MEDirectBookingCalendar : "has calendars"
+    MEDirectBranch          ||--o{ MEDirectBookingCalendar : "at branch"
+    MEDirectBookingCalendar ||--o{ MEDirectBookingSlot     : "contains slots"
+    MEDirectBookingSlot     ||--o| MEDirectCaseService     : "linked service"
+    MEDirectCase            ||--o{ MEDirectBookingSlot     : "case for slot"
+    MEDirectUserAccount     ||--o{ MEDirectCase            : "case worker"
+    MEDirectCaseType        ||--o{ MEDirectCase            : "case type"
+    MEDirectCase            ||--o{ MEDirectCaseInvoice     : "invoiced via CaseNo"
+    MEDirectCaseInvoice     ||--o{ MEDirectCasePaidInvoice : "payment records"
+    MEDirectContact         ||--o{ MEDirectCaseInvoice     : "billed to"
+    MEDirectOrganisation    ||--o{ MEDirectContact         : "org contact"
+    MEDirectContactCategory ||--o{ MEDirectContact         : "category"
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!--  TAB 4 — ANALYTICS FLOW                               -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div id="analytics" class="panel">
+  <div class="diagram-wrap">
+    <div class="mermaid">
+flowchart LR
+    subgraph FILTERS["Query Filters (optional)"]
+        F1["year"]
+        F2["quarter"]
+        F3["month"]
+        F4["doctor_id"]
+    end
+
+    subgraph CTE1["CTE: InvoiceDetails"]
+        D1["MEDirectCaseInvoice\n(IsActive=1)"]
+        D2["MEDirectCase\n(CaseNo join)"]
+        D3["MEDirectUserAccount\n(CaseWorkerId → doctor name)"]
+        D4["MEDirectCasePaidInvoice\n(AmountPaid)"]
+        D1 --> D2 --> D3
+        D1 --> D4
+        FIELDS1["Fields:\nAmountExGST ÷100\nAmountIncGST ÷100\nGST ÷100\nAmountPaid ÷100"]
+    end
+
+    subgraph CTE2["CTE: Aggregated (GROUP BY doctor)"]
+        AGG["SUM(ExGST)\nSUM(IncGST)\nSUM(GST)\nSUM(Paid)\nSUM(Paid) − SUM(IncGST) → Balance\nCOUNT(*) → TotalInvoices"]
+    end
+
+    subgraph CTE3["CTE: AllTotal (grand totals)"]
+        TOT["SUM(ExGST) → AllTotalExGST\nCOUNT(*) → AllInvoices"]
+    end
+
+    subgraph FINAL["Final SELECT (CROSS JOIN)"]
+        OUT["% of invoices = TotalInvoices / AllInvoices × 100\n% of revenue = TotalExGST / AllTotalExGST × 100\nORDER BY TotalExGST DESC"]
+    end
+
+    subgraph ENDPOINTS["Blueprint Endpoints"]
+        E1["/api/doctor-analysis\ndoctor_analysis.py"]
+        E2["/api/doctor-invoice\ndoctor_invoice.py"]
+        E3["/api/doctor-calendar\ndoctor_calendar.py"]
+    end
+
+    FILTERS --> CTE1
+    CTE1 --> CTE2
+    CTE1 --> CTE3
+    CTE2 --> FINAL
+    CTE3 --> FINAL
+    FINAL --> E1
+
+    subgraph INV_CTE["doctor_invoice CTE"]
+        direction TB
+        IV1["MEDirectCaseInvoice"]
+        IV2["MEDirectContact → Organisation"]
+        IV3["MEDirectCase → CaseType (Sector)"]
+        IV4["MEDirectUserAccount (doctor)"]
+        IV5["MEDirectContactCategory"]
+        IV1 --> IV2
+        IV1 --> IV3
+        IV1 --> IV4
+        IV2 --> IV5
+        IOUT["GROUP BY month, doctor,\ncontact category, sector, org\nSUM(AmountExGST)"]
+    end
+    IV1 --> IOUT --> E2
+
+    subgraph CAL_CTE["doctor_calendar CTE"]
+        direction TB
+        CC1["MEDirectBookingSlot\n+ Calendar + UserAccount\n+ Branch + CaseService\n+ MEDirectCase"]
+        CC2["GROUP BY date, doctor, location\nCOUNT(*) SlotCount\nIsBooked → status label"]
+    end
+    CC1 --> CC2 --> E3
+
+    style FILTERS fill:#1a1a2d,stroke:#6366f1,color:#e0e6f0
+    style CTE1    fill:#2d1f1a,stroke:#ea580c,color:#e0e6f0
+    style CTE2    fill:#1a2e1a,stroke:#16a34a,color:#e0e6f0
+    style CTE3    fill:#1a2e1a,stroke:#16a34a,color:#e0e6f0
+    style FINAL   fill:#1e3a5f,stroke:#2563eb,color:#e0e6f0
+    style ENDPOINTS fill:#2d1a2d,stroke:#9333ea,color:#e0e6f0
+    style INV_CTE fill:#2d1f1a,stroke:#ea580c,color:#e0e6f0
+    style CAL_CTE fill:#2d1f1a,stroke:#ea580c,color:#e0e6f0
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!--  TAB 5 — API ENDPOINTS REFERENCE                      -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div id="endpoints" class="panel">
+  <div class="diagram-wrap" style="padding: 24px;">
+    <h3>API Endpoint Reference</h3>
+    <table>
+      <thead>
+        <tr>
+          <th class="method-col">Method</th>
+          <th class="path-col">Path</th>
+          <th>Query Params</th>
+          <th>Source</th>
+          <th>DB Tables Queried</th>
+          <th>Returns</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/</code></td>
+          <td>—</td>
+          <td>app.py</td>
+          <td>—</td>
+          <td>Renders <code>calendar2.html</code></td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/doctors</code></td>
+          <td>—</td>
+          <td>app.py</td>
+          <td>BookingCalendar, BookingSlot, UserAccount, Branch</td>
+          <td>JSON list of 11 doctors <code>[{id, name}]</code></td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/all_doctors</code></td>
+          <td>—</td>
+          <td>app.py</td>
+          <td>BookingCalendar, BookingSlot, UserAccount</td>
+          <td>JSON all doctors (no ID filter)</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/slots</code></td>
+          <td><code>start</code>, <code>end</code>, <code>doctor_id[]</code></td>
+          <td>app.py</td>
+          <td>BookingCalendar, BookingSlot, UserAccount, Branch, CaseService</td>
+          <td>JSON available slots with doctor, branch, start/end times</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/available-months</code></td>
+          <td><code>doctor_id[]</code></td>
+          <td>app.py</td>
+          <td>BookingCalendar, BookingSlot, UserAccount, Branch (HSA filter)</td>
+          <td>JSON month abbreviation list <code>["Jan","Mar",…]</code></td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/available-years</code></td>
+          <td>—</td>
+          <td>app.py</td>
+          <td>BookingSlot (IsBooked=1, current year+)</td>
+          <td>JSON year list <code>[2025, 2026]</code></td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/doctor-link</code></td>
+          <td><code>doctor</code> (name)</td>
+          <td>app.py</td>
+          <td>— (hardcoded dict)</td>
+          <td>JSON <code>{doctorLink: "https://medirect.com.au/…"}</code></td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/booking-url</code></td>
+          <td><code>doctor</code> (name)</td>
+          <td>app.py</td>
+          <td>— (hardcoded dict)</td>
+          <td>JSON <code>{bookingUrl: "https://bookings.medirect.com.au/…"}</code></td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/doctor-invoice</code></td>
+          <td>—</td>
+          <td>doctor_invoice.py</td>
+          <td>CaseInvoice, Contact, Organisation, Case, CaseType, UserAccount, ContactCategory</td>
+          <td>JSON monthly invoice summaries grouped by doctor / sector / org</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/doctor-calendar</code></td>
+          <td>—</td>
+          <td>doctor_calendar.py</td>
+          <td>BookingCalendar, BookingSlot, UserAccount, Branch, CaseService, Case</td>
+          <td>JSON daily slot counts per doctor with status and location</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/doctor-analysis</code></td>
+          <td><code>year</code>, <code>quarter</code>, <code>month</code>, <code>doctor_id</code></td>
+          <td>doctor_analysis.py</td>
+          <td>CaseInvoice, Case, UserAccount, CasePaidInvoice</td>
+          <td>JSON revenue analytics per doctor with GST, % of total</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor: '#1e3a5f',
+      primaryTextColor: '#e0e6f0',
+      primaryBorderColor: '#2563eb',
+      lineColor: '#4b5563',
+      secondaryColor: '#2d1f1a',
+      tertiaryColor: '#1a2e1a',
+      background: '#0f1117',
+      mainBkg: '#181d2a',
+      nodeBorder: '#374151',
+      clusterBkg: '#1a1f2e',
+      titleColor: '#e0e6f0',
+      edgeLabelBackground: '#232a3b',
+      actorBkg: '#1e3a5f',
+      actorBorder: '#2563eb',
+      actorTextColor: '#e0e6f0',
+      actorLineColor: '#4b5563',
+      signalColor: '#94a3b8',
+      signalTextColor: '#e0e6f0',
+    }
+  });
+
+  function show(id) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+  }
+</script>
+</body>
+</html>
