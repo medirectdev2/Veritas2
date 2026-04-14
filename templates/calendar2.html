@@ -10,7 +10,7 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.min.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-        <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css">
+
 
 
         <style>
@@ -121,7 +121,7 @@
           </div>
           <div class="modal-body">
             <p><strong>Event Name:</strong> <span id="modal-event-name"></span></p>
-            <p><strong>Doctor:</strong> <span id="modal-doctor-name"></span></p>
+            <p><strong>Doctor:</strong> <a id="modal-doctor-name" href="#" target="_blank"></a></p>
             <p><strong>Start Time:</strong> <span id="modal-start-time"></span></p>
             <p><strong>Branch Name:</strong> <span id="modal-branch-name"></span></p>
           </div>
@@ -144,8 +144,7 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@latest/main.min.js'></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
-    <script src="https://unpkg.com/@popperjs/core@2"></script>
-    <script src="https://unpkg.com/tippy.js@6"></script>
+
 
     <script type="text/javascript">
       $(function () {
@@ -200,31 +199,6 @@
                         calendar.changeView('dayGridMonth');
                     }
                 },
-            eventMouseEnter: function(info) {
-                fetch(`/api/doctor-link?doctor=${encodeURIComponent(info.event.extendedProps.doctorName)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        var doctorLink = data.doctorLink || '#';
-                        var tooltipContent = `
-                            <div>
-                                <p>Event Name: ${info.event.title}</p>
-                                <p>Doctor: <a href="${doctorLink}" target="_blank">${info.event.extendedProps.doctorName}</a></p>
-                                <p>Start Time: ${info.event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
-                                <p>Branch Name: ${info.event.extendedProps.branchName}</p>
-                            </div>
-                        `;
-                        tippy(info.el, {
-                            content: tooltipContent,
-                            allowHTML: true,
-                            interactive: true,
-                            placement: 'top',
-                            appendTo: document.body
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Error fetching doctor link:', error);
-                    });
-            },
             datesSet: handleDatesSet,
             dayCellDidMount: function(info) {
                 if (info.date < today) {
@@ -248,9 +222,20 @@
           const startTime = info.event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
 
           document.getElementById('modal-event-name').textContent = info.event.title;
-          document.getElementById('modal-doctor-name').textContent = doctorName;
+          const doctorNameEl = document.getElementById('modal-doctor-name');
+          doctorNameEl.textContent = doctorName;
+          doctorNameEl.href = '#';
           document.getElementById('modal-start-time').textContent = startTime;
           document.getElementById('modal-branch-name').textContent = info.event.extendedProps.branchName || 'N/A';
+
+          fetch(`/api/doctor-link?doctor=${encodeURIComponent(doctorName)}`)
+              .then(response => response.json())
+              .then(data => {
+                  if (data.doctorLink) {
+                      doctorNameEl.href = data.doctorLink;
+                  }
+              })
+              .catch(error => console.error("Error fetching doctor link:", error));
 
           const bookBtn = document.getElementById('modal-book-btn');
           bookBtn.href = '#';
@@ -429,6 +414,7 @@
                           extendedProps: {
                               isBooked: event.status === 'Booked',
                               doctorName: event.doctor_name,
+                              doctorId: event.doctor_id,
                               branchName: event.branch_name,
                               bookingUrl: event.booking_url
                           }
