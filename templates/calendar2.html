@@ -109,6 +109,32 @@
         </div>
       </div>
       
+    <!-- Event Detail Modal -->
+    <div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="eventModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header" style="background-color:#063f80; color:#fff;">
+            <h5 class="modal-title" id="eventModalLabel">Appointment Details</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true" style="color:#fff;">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p><strong>Event Name:</strong> <span id="modal-event-name"></span></p>
+            <p><strong>Doctor:</strong> <span id="modal-doctor-name"></span></p>
+            <p><strong>Start Time:</strong> <span id="modal-start-time"></span></p>
+            <p><strong>Branch Name:</strong> <span id="modal-branch-name"></span></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <a id="modal-book-btn" href="#" target="_blank" class="btn btn-primary" style="background-color:#063f80; border-color:#063f80;">
+              Book Now
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Footer -->
     <footer class="site-footer bg-blackout text-white text-center py-3">
       &copy Veritas MedicoLegal All Rights Reserved.
@@ -219,18 +245,36 @@
               return;
           }
           const doctorName = info.event.extendedProps.doctorName;
+          const startTime = info.event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+
+          document.getElementById('modal-event-name').textContent = info.event.title;
+          document.getElementById('modal-doctor-name').textContent = doctorName;
+          document.getElementById('modal-start-time').textContent = startTime;
+          document.getElementById('modal-branch-name').textContent = info.event.extendedProps.branchName || 'N/A';
+
+          const bookBtn = document.getElementById('modal-book-btn');
+          bookBtn.href = '#';
+          bookBtn.style.display = 'none';
+          bookBtn.classList.add('disabled');
+
           fetch(`/api/booking-url?doctor=${encodeURIComponent(doctorName)}`)
               .then(response => response.json())
               .then(data => {
                   if (data.bookingUrl) {
-                      window.open(data.bookingUrl, '_blank');
+                      bookBtn.href = data.bookingUrl;
+                      bookBtn.textContent = 'Book Now';
+                      bookBtn.classList.remove('disabled');
+                      bookBtn.style.display = '';
                   } else {
-                      console.error("No booking URL found for this doctor");
+                      bookBtn.style.display = 'none';
                   }
               })
               .catch(error => {
                   console.error("Error fetching booking URL:", error);
+                  bookBtn.style.display = 'none';
               });
+
+          $('#eventModal').modal('show');
         }
     
         function handleDatesSet(dateInfo) {
