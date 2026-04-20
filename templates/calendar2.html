@@ -228,14 +228,7 @@
           document.getElementById('modal-start-time').textContent = startTime;
           document.getElementById('modal-branch-name').textContent = info.event.extendedProps.branchName || 'N/A';
 
-          fetch(`/api/doctor-link?doctor=${encodeURIComponent(doctorName)}`)
-              .then(response => response.json())
-              .then(data => {
-                  if (data.doctorLink) {
-                      doctorNameEl.href = data.doctorLink;
-                  }
-              })
-              .catch(error => console.error("Error fetching doctor link:", error));
+          doctorNameEl.href = 'https://veritasmedicolegal.com.au/our-team/';
 
           const bookBtn = document.getElementById('modal-book-btn');
           bookBtn.href = '#';
